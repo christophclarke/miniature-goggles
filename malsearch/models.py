@@ -24,6 +24,12 @@ class SampleComment(models.Model):
     datetime_created = models.DateTimeField(auto_now_add=True)
 
 
+class SampleFavorite(models.Model):
+    sample = models.ForeignKey(Sample, related_name='favorites', on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name='favorites', on_delete=models.CASCADE)
+    datetime_favorited = models.DateTimeField(auto_now_add=True)
+
+
 class ScanResult(models.Model):
     scan_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     date_time_scanned = models.DateTimeField()

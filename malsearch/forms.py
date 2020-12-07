@@ -5,4 +5,8 @@ from malsearch.models import SampleComment
 class CommentForm(forms.ModelForm):
     class Meta:
         model = SampleComment
-        fields = ['comment']
+        fields = ['sample', 'user', 'comment']
+        widgets = {
+            'sample': forms.HiddenInput(),
+            'user': forms.HiddenInput()
+        }

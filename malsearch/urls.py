@@ -11,5 +11,5 @@ urlpatterns = [
     re_path(r'^advanced-search$', views.advanced_search, name='advanced_search'),
     path('sample/<uuid:sample_id>', views.sample_detail, name='sample_detail'),
     path('sample/<uuid:sample_id>/csv', views.sample_detail_export, name='sample_detail_export'),
-    path('sample/<uuid:sample_id>/comment', views.sample_detail_comment_update, name='sample_detail_comment_update'),
+    path('sample/<uuid:sample_id>/favorite', views.sample_favorite, name='sample_favorite'),
 ]

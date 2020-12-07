@@ -3,12 +3,12 @@ import csv
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotModified
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .filters import SampleFilter
 from .forms import CommentForm
-from .models import Sample
+from .models import Sample, SampleFavorite, SampleComment
 
 
 # Create your views here.
@@ -22,7 +22,9 @@ def index(request):
 
 @login_required
 def dashboard(request):
-    context = {}
+    favs = SampleFavorite.objects.filter(user_id=request.user.id)
+    comments = SampleComment.objects.filter(user_id=request.user.id).order_by('-datetime_created')[:10]
+    context = {'favorites': [fav.sample for fav in favs], 'comments': comments}
     return render(request, 'malsearch/dash_home.html', context)
 
 
@@ -45,25 +47,43 @@ def search(request):
 @login_required
 def sample_detail(request, sample_id):
     sample = get_object_or_404(Sample, sample_id=sample_id)
-    try:
-        latest_comment = sample.comments.order_by('-datetime_created')[0]
-        comment = latest_comment.comment
-    except IndexError as e:
-        comment = ""
-
-    # comment_form = CommentForm(initial={'user_id': request.user.id, 'comment': comment})
-    return render(request, 'malsearch/sample_detail.html', {'sample': sample, 'scans': sample.scan_results.all(), 'comment': comment})
-
-
-@login_required
-def sample_detail_comment_update(request, sample_id):
     if request.method == 'POST':
         form = CommentForm(request.POST)
         if form.is_valid():
             form.save()
-            return HttpResponse(status=201)
+            return redirect(sample_detail, sample_id=sample_id)
+        else:
+            comment_form = form
+    else:
+        try:
+            latest_comment = sample.comments.order_by('-datetime_created')[0]
+            comment = latest_comment.comment
+        except IndexError as e:
+            comment = ''
 
-    return
+        comment_form = CommentForm(data={'user': request.user.id, 'sample': sample.sample_id, 'comment': comment})
+
+    favorited = SampleFavorite.objects.filter(sample=sample_id, user=request.user.id).exists()
+    return render(request, 'malsearch/sample_detail.html', {'sample': sample, 'favorited': favorited, 'scans': sample.scan_results.all(), 'comment_form': comment_form})
+
+
+@login_required
+def sample_favorite(request, sample_id):
+    sample = SampleFavorite.objects.filter(sample=sample_id, user=request.user.id)
+    if request.method == 'POST':
+        if sample.exists():
+            return HttpResponseNotModified('Favorite Already Exists')
+        else:
+            SampleFavorite(sample_id=sample_id, user=request.user).save()
+            return HttpResponse(status=201)
+    if request.method == 'DELETE':
+        if sample.exists():
+            sample.delete()
+            return HttpResponse(status=204)
+        else:
+            return HttpResponseNotModified('Favorite Does Not Exist')
+    else:
+        return HttpResponseBadRequest("Only POST and DELETE operations allowed")
 
 
 @login_required
