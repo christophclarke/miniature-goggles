@@ -1,0 +1,88 @@
+{% extends 'malsearch/dash_base.html' %}
+
+{% block main %}
+    <div class="row my-2">
+        <div class="col">
+            <h1>Advanced Search</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            {#                        <form method="get">#}
+            {#                        {{ filter.form|crispy }}#}
+            {#                            <button type="submit">Submit</button>#}
+            {#                        </form>#}
+            <div class="card">
+                <div class="card-body">
+                    <form method="get">
+                        {% for field in filter.form %}
+                            <div class="form-group row">
+                                <div class="col-sm-2 col-xl-1">
+                                    <label class="col-form-label text-capitalize text-right w-100" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                </div>
+                                <div class="col-sm-10 col-xl-11">
+                                    <input type="text" class="form-control"
+                                           name="{{ field.name }}"
+                                           id="{{ field.id_for_label }}"
+                                           value="">
+                                    {% if field.help_text %}
+                                        <small class="form-text text-muted">{{ field.help_text|safe }} </small>
+                                    {% endif %}
+                                    {{ field.errors }}
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <button class="btn btn-secondary" type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mt-4">
+        <div class="col">
+            <h2>Results</h2>
+            <p>{{ results.paginator.count }} samples found</p>
+            {% if results %}
+                {% for sample in results.object_list %}
+                    <div class="border rounded p-3 my-3 shadow-sm">
+                        <div class="row">
+                            <div class="col-9 text-truncate">
+                                <small class="text-muted">{{ sample.file_path }}</small>
+                            </div>
+                            <div class="col-3 pr-4">
+                                <a class="float-right" href="{% url 'sample_detail' sample.sample_id %}">Details</a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 text-truncate">
+                                <h5 class="border-bottom pb-2 text-truncate">{{ sample.file_name }}</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <div class="text-nowrap">
+                                    <strong>MD5</strong>
+                                    <small class="text-monospace">{{ sample.hash_md5 }}</small>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div class="text-nowrap">
+                                    <strong>SHA1</strong>
+                                    <small class="text-monospace">{{ sample.hash_sha1 }}</small>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="text-nowrap text-truncate">
+                                    <strong>SHA256</strong>
+                                    <small class="text-monospace">{{ sample.hash_sha256 }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+
+
+{% endblock %}
