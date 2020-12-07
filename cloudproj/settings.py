@@ -24,7 +24,7 @@ SECRET_KEY = 'xih%_k%zqchx)g561^**k2-he!l*$0kzfh6c-@r#o&3@rn4p2_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'mixis.tech']
 
 LOGIN_REDIRECT_URL = '/'
 
